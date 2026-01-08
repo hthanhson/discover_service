@@ -12,7 +12,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
-
+import jakarta.annotation.PostConstruct;
 // @Configuration
 // public class FirebaseConfig {
 
@@ -42,13 +42,13 @@ import com.google.firebase.cloud.FirestoreClient;
 @Configuration
 public class FirebaseConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(FirebaseConfig.class);
+    // private static final Logger logger = LoggerFactory.getLogger(FirebaseConfig.class);
 
     @PostConstruct
     public void initFirebase() {
         try {
             if (!FirebaseApp.getApps().isEmpty()) {
-                logger.info("Firebase already initialized");
+                // logger.info("Firebase already initialized");
                 return;
             }
 
@@ -68,10 +68,10 @@ public class FirebaseConfig {
                     .build();
 
             FirebaseApp.initializeApp(options);
-            logger.info("✓ Firebase initialized successfully");
+            // logger.info("✓ Firebase initialized successfully");
 
         } catch (Exception e) {
-            logger.error("✗ Firebase initialization failed", e);
+            // logger.error("✗ Firebase initialization failed", e);
         }
     }
 
