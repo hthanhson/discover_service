@@ -3,10 +3,10 @@ WORKDIR /app
 
 COPY pom.xml .
 COPY .mvn .mvn
-COPY mvnw .
+COPY mvn .
 COPY src src
 
-RUN ./mvnw -DskipTests clean package
+RUN ./mvn -DskipTests clean package
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
