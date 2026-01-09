@@ -4,14 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.datn.discover_service.model.*;
 import org.springframework.stereotype.Service;
 
 import com.datn.discover_service.dto.CommentDto;
 import com.datn.discover_service.dto.PlanDetailResponse;
-import com.datn.discover_service.model.Plan;
-import com.datn.discover_service.model.PlanComment;
-import com.datn.discover_service.model.PlanLike;
-import com.datn.discover_service.model.User;
 import com.datn.discover_service.repository.PlanRepository;
 import com.datn.discover_service.repository.TripRepository;
 import com.datn.discover_service.repository.UsersRepository;
@@ -139,7 +136,7 @@ public class PlanService {
                     .orElseThrow(() -> new RuntimeException("Plan not found"));
 
             List<PlanComment> comments = plan.getComments() != null ? plan.getComments() : List.of();
-            
+
             // Convert to CommentDto with user info
             return comments.stream().map(comment -> {
                 try {
@@ -193,7 +190,7 @@ public class PlanService {
                             .createdAt(com.google.cloud.Timestamp.now())
                             .build()
             );
-            
+
             planRepository.save(plan);
 
         } catch (Exception e) {
@@ -204,5 +201,40 @@ public class PlanService {
     private void updateTripLike(String tripId, int delta) throws Exception {
 
         tripRepository.updateLikeCount(tripId, delta);
+    }
+
+    public void deleteComment(String planId, Long commentId, String userId) {
+        try {
+            Plan plan = planRepository.findById(planId)
+                    .orElseThrow(() -> new RuntimeException("Plan not found"));
+
+            if (plan.getComments() == null) return;
+
+            // 🔥 LẤY TRIP → LẤY CHỦ TUS
+            Trip trip = tripRepository.getTrip(plan.getTripId());
+            if (trip == null) {
+                throw new RuntimeException("Trip not found");
+            }
+
+            boolean isPlanOwner = userId.equals(trip.getUserId());
+
+            boolean removed = plan.getComments().removeIf(c ->
+                    c.getId().equals(commentId)
+                            && (
+                            c.getUserId().equals(userId) // người viết comment
+                                    || isPlanOwner               // 🔥 chủ tus
+                    )
+            );
+
+            if (!removed) {
+                throw new RuntimeException("No permission to delete comment");
+            }
+
+            planRepository.save(plan);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete comment", e);
+        }
+
     }
 }
